@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
-  <title>Möbius Binary Encoding Tool</title>
+  <title>Binary Encoding Tool (Fast Version)</title>
   <style>
     body { font-family: system-ui, sans-serif; margin: 20px; }
     h1 { font-size: 1.4rem; }
@@ -16,31 +16,32 @@
   </style>
 </head>
 <body>
-  <h1>Möbius Binary Encoding / Decoding</h1>
+  <h1>Binary Encoding / Decoding</h1>
 
   <!-- Encode -->
   <div class="section">
-    <h2>エンコード（m, n → binary）</h2>
+    <h2>Encoding（m, n → binary）</h2>
     <label>m:</label>
     <input type="number" id="m_input" min="1" value="238">
     <label>n:</label>
     <input type="number" id="n_input" min="1" value="23147">
-    <button onclick="handleEncode()">エンコード</button>
+    <button onclick="handleEncode()">Encoding</button>
     <div class="result" id="encode_result"></div>
   </div>
 
   <!-- Decode -->
   <div class="section">
-    <h2>デコード（binary → m, n）</h2>
-    <label>ビット列（0/1）:</label>
+    <h2>Decoding（binary → m, n）</h2>
+    <label>bit（0/1）:</label>
     <textarea id="bits_input" rows="3">01111100101000100101001</textarea>
-    <button onclick="handleDecode()">デコード</button>
+    <button onclick="handleDecode()">Decoding</button>
     <div class="result" id="decode_result"></div>
   </div>
 
   <script>
 /* -------------------------
-   Möbius Encoding / Decoding
+   正しい Fast Möbius Encoding
+   （遅い版と完全一致する高速版）
    ------------------------- */
 
 function encodeMobius(m, n) {
@@ -51,16 +52,24 @@ function encodeMobius(m, n) {
 
   while (m !== n) {
     if (m > n) {
-      bits.push("1");
-      m = m - n;
+      // ★ 正しい Fast 版：q = floor((m-1)/n)
+      const q = (m - 1n) / n;
+      bits.push("1".repeat(Number(q)));
+      m = m - q * n;
     } else {
-      bits.push("0");
-      n = n - m;
+      // ★ 正しい Fast 版：q = floor((n-1)/m)
+      const q = (n - 1n) / m;
+      bits.push("0".repeat(Number(q)));
+      n = n - q * m;
     }
   }
 
   return bits.reverse().join("");
 }
+
+/* -------------------------
+   Decoding（遅い版と同じ）
+   ------------------------- */
 
 function decodeMobius(binaryStr) {
   const s = binaryStr.trim();
@@ -82,7 +91,7 @@ function decodeMobius(binaryStr) {
 }
 
 /* -------------------------
-   UI handlers（ここが重要）
+   UI handlers
    ------------------------- */
 
 function handleEncode() {
